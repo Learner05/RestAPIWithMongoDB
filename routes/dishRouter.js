@@ -3,7 +3,7 @@ var bodyParser = require('body-parser');
 var mongoose   = require('mongoose');
 
 var Dishes     = require('../models/dishes');
-
+var Verify     = require('./verify');
 
 // Declaring the Router. And all parsing the request.
 
@@ -11,7 +11,7 @@ var dishRouter = express.Router();
 dishRouter.use(bodyParser.json());
 
 dishRouter.route('/')
-.get(function(req,res,next){
+.get(Verify.verifyOrdinaryUser, function(req,res,next){
 
     Dishes.find({}, function(err,dish){
         if (err) throw err;
@@ -19,8 +19,8 @@ dishRouter.route('/')
     });
 })
 
-.post(function(req,res,next){
-
+.post(Verify.verifyAdmin, function(req,res,next){
+    console.log("Dish not Created yet");
     Dishes.create(req.body,function(err,dish){
         if (err) throw err;
         console.log("Dish Created");
@@ -32,7 +32,7 @@ dishRouter.route('/')
 
 })
 
-.delete(function(req,res,next){
+.delete(Verify.verifyAdmin, function(req,res,next){
     
     Dishes.remove({},function(err, resp){
         if (err) throw err;
@@ -44,7 +44,7 @@ dishRouter.route('/')
 // Passing the Req Params
 
 dishRouter.route('/:dishId')
-.get(function(req,res,next){
+.get(Verify.verifyOrdinaryUser,function(req,res,next){
     
     Dishes.findById(req.params.dishId, function(err, dish){
         if (err) throw err;
@@ -53,7 +53,7 @@ dishRouter.route('/:dishId')
     });
 })
 
-.put(function(req,res,next){
+.put(Verify.verifyAdmin, function(req,res,next){
 
     Dishes.findByIdAndUpdate(req.params.dishId,{
         
@@ -67,7 +67,7 @@ dishRouter.route('/:dishId')
 })
 
 
-.delete(function(req,res,next){
+.delete(Verify.verifyAdmin, function(req,res,next){
     
     Dishes.findByIdAndRemove(req.params.dishId,function(err, resp){
         if (err) throw err;
@@ -78,7 +78,7 @@ dishRouter.route('/:dishId')
 //-----------------------------------------------------------------------------------------------
 
 dishRouter.route('/:dishId/comments')
-.get(function(req,res,next){
+.get(Verify.verifyOrdinaryUser,function(req,res,next){
     
     Dishes.findById(req.params.dishId, function(err,dish){
         if (err) throw err;
@@ -86,7 +86,7 @@ dishRouter.route('/:dishId/comments')
     });
 })
 
-.post(function(req,res,next){
+.post(Verify.verifyAdmin, function(req,res,next){
     
     Dishes.findById(req.params.dishId, function(err,dish){
         if (err) throw err;
@@ -101,7 +101,7 @@ dishRouter.route('/:dishId/comments')
     }); 
 })
 
-.delete(function(req,res,next){
+.delete(Verify.verifyAdmin, function(req,res,next){
     
     Dishes.findById(req.params.dishId, function(err,dish){
         if (err) throw err;
@@ -124,36 +124,36 @@ dishRouter.route('/:dishId/comments')
 //------------------------------------------------------------------------------------------------
 
 dishRouter.route('/:dishId/comments/:commentId')
-.get(function(req,res,next){
+.get(Verify.verifyOrdinaryUser,function(req,res,next){
     
     Dishes.findById(req.params.dishId, function(err,dish){
         if (err) throw err;
         res.json(dish.comments.id(req.params.commentId)); 
     });
 })
-.put(function(req,res,next){
+.put(Verify.verifyAdmin, function(req,res,next){
     
-    Dishes.findById(req.params,dishId, function(err,dish){
+    Dishes.findById(req.params.dishId, function(err,dish){
         
-        Dishes.comments.id(req.params.commentId).remove();
+        dish.comments.id(req.params.commentId).remove();
         
-        Dishes.comments.push(req.body); 
+        dish.comments.push(req.body); 
                               
-        Dishes.save(function(err,resp){
+        dish.save(function(err,resp){
             if (err) throw err;
             console.log('Updated the Commment');
             console.log(resp);
             res.json(resp);
-        }); 
+        });
     });
 })
-.delete(function(req,res,next){
+.delete(Verify.verifyAdmin, function(req,res,next){
     
-    Dishes.findById(req.params,dishId, function(err,dish){
+    Dishes.findById(req.params.dishId, function(err,dish){
         
-        Dishes.comments.id(req.params.commentId).remove();
+        dish.comments.id(req.params.commentId).remove();
                                
-        Dishes.save(function(err,resp){
+        dish.save(function(err,resp){
             if (err) throw err;
             res.json(resp);
         }); 

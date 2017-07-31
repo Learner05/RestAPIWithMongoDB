@@ -1,5 +1,6 @@
 var express     = require('express');
 var bodyParser  = require('body-parser');
+var Verify     = require('./verify');
 
 var leaderRouter = express.Router();
 leaderRouter.use(bodyParser.json());
@@ -12,18 +13,18 @@ leaderRouter.route('/')
 	next();
 
 })
-.get(function(req,res,next){
+.get(Verify.verifyOrdinaryUser, function(req,res,next){
 
 	res.end("Will send all Leaders to you");
 })
 
-.post(function(req,res,next){
+.post(Verify.verifyAdmin, function(req,res,next){
 
 	res.end("Will add the Leaders with name: " + req.body.name + " with description: " + req.body.description);
 
 })
 
-.delete(function(req,res,next){
+.delete(Verify.verifyAdmin, function(req,res,next){
 
 	res.end("Deleting all Leaders");
 });
@@ -37,18 +38,18 @@ leaderRouter.route('/:leaderId')
 
 })
 
-.get(function(req,res,next){
+.get(Verify.verifyOrdinaryUser, function(req,res,next){
 
 	res.end("here are the details for leader: " + req.params.leaderId);
 })
 
-.put(function(req,res,next){
+.put(Verify.verifyAdmin, function(req,res,next){
 
 	res.end("Modifying the Leader with Id: " + req.params.leaderId + '\n');
 	res.end("Updated name: " + req.body.name + " with description : " + req.body.description);
 })
 
-.delete(function(req,res,next){
+.delete(Verify.verifyAdmin, function(req,res,next){
 
 	res.end("Deleting the leader with ID: " + req.params.leaderId);
 });
